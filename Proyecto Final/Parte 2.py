@@ -110,4 +110,12 @@ if boton_calculo:
             st.title('¡¡¡Enhorabuena!!! Había sitio en la tabla para ti, y HAS SOBREVIVIDO :)')
             st.image(img_ok)
 
+# Parte opcional 1: Ver un análisis de los datos originales del Titanic
+
+# Creamos un checkbox para mostrar los datos adicionales
+ver_datos = st.checkbox('Ver datos adicionales sobre el Titanic (para comprender mejor por que has sobrevivido, o no)')
+
+# Dibujar Gráfica si está activado el checkbox
+if ver_datos:
+    st.write('Datos adicionales')
 
