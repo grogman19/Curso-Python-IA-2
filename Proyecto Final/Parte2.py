@@ -94,7 +94,7 @@ if boton_calculo:
                 status_text.text('Precalentando Tensor Cores de la GPU para generar la predicción')
             elif i == 99:
                 status_text.text('Cálculo de la predicción completado')
-            #time.sleep(0.1)
+            time.sleep(0.1)
 
         # Y ahora sí, procedemos a realizar la predicción
         # Creamos un dataframe de pandas con los datos para la predicción
