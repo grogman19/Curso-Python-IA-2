@@ -5,3 +5,4 @@ seaborn==0.11.1
 Pillow==8.2.0
 pickleshare==0.7.5
 matplotlib==3.2.1
+sklearn==0.0
