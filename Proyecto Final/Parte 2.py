@@ -2,18 +2,18 @@
 # de edad, sexo, y clase, de un hipotético pasajero del Titanic, y mediante el clasificador entrenado en la primera parte, hacer
 # una predicción sobre si el pasajero hubiera sobrevivido al hundimiento o no.
 
-# Comenzaremos por importar el módulo streamlit, y el resto de módulos necesarios para trabajar con el clasificador
+# Comenzaremos por importar el módulo streamlit, y el resto de módulos necesarios para todo lo que vamos a hacer
 import streamlit as st
 import pandas as pd
 import pickle
 import time
+import matplotlib.pyplot as plt
+import seaborn as sb
 from PIL import Image
 
 # Mostramos un título y una breve explicación de lo que hace el dashboard
 st.title('Simulador de supervivencia del Titanic')
-st.write('''Bienvenido al simulador de supervencia al desastre del Titanic. Si desea sentir de primera mano 
-            lo que pudo ser la experiencia del hundimiento del Titanic, introduzca sus datos de Sexo, Edad, y en que
-            clase le gustaría viajar, y gustosamente le indicaremos si sobrevivió al desastre... o no.''')
+st.write('Bienvenido al simulador de supervencia al desastre del Titanic. Si desea sentir de primera mano lo que pudo ser la experiencia del hundimiento del Titanic, introduzca sus datos de Sexo, Edad, y en que clase le gustaría viajar, y gustosamente le indicaremos si sobrevivió al desastre... o no.')
 
 # Crearemos un form de Streamlit, para recargar la app únicamente cuando le demos al botón de 
 # calcular, y no al interactuar con los otros controles
@@ -24,6 +24,8 @@ sexo = form_datos_entrada.selectbox('Seleccione su sexo:', ('Hombre', 'Mujer'))
 edad = form_datos_entrada.text_input(label='Introduzca su edad:') 
 # Introducimos un combo box para elegir la Clase
 clase = form_datos_entrada.selectbox('Ud. desea viajar en clase:', ('Primera', 'Segunda', 'Tercera'))
+# Creamos un checkbox para mostrar los datos adicionales
+ver_datos = form_datos_entrada.checkbox('Ver datos adicionales sobre el Titanic (para comprender mejor por que has sobrevivido, o no)')
 # Introducimos un botón que procederá a realizar el cálculo
 boton_calculo = form_datos_entrada.form_submit_button(label='Calcular')
 
@@ -45,8 +47,13 @@ dato = dict()
 # Cargamos un par de imagenes que mostraremos en función del resultado
 img_ok = Image.open('OK.jpg')
 img_ko = Image.open('KO.jpg')
+
+# Cargamos los datos originales del manifiesto del Titanic, para mostrar datos adicionales si lo pide el usuario
+# Cargamos los datos en un dataframe
+df_titanic = pd.read_csv('titanic.csv')
+
     
-# Esta sección se ejecuta al presionar el botón Calcular    
+# Esta sección solo se ejecuta al presionar el botón Calcular    
 if boton_calculo:
     # Sacamos el dato del sexo
     if sexo == 'Hombre':
@@ -87,7 +94,7 @@ if boton_calculo:
                 status_text.text('Precalentando Tensor Cores de la GPU para generar la predicción')
             elif i == 99:
                 status_text.text('Cálculo de la predicción completado')
-            time.sleep(0.1)
+            #time.sleep(0.1)
 
         # Y ahora sí, procedemos a realizar la predicción
         # Creamos un dataframe de pandas con los datos para la predicción
@@ -104,18 +111,38 @@ if boton_calculo:
 
         # Mostramos el resultado en pantalla
         if Y.loc[0, target_name] == 0:
-            st.title('Ooooohhhh, lo sentimos, pero no había suficiente sitio en la tabla y NO HAS SOBREVIVIDO :(')
+            st.title('Ooooohhhh, lo sentimos, pero no había suficiente sitio en la tabla de madera, y NO HAS SOBREVIVIDO :(')
             st.image(img_ko)
         else:
-            st.title('¡¡¡Enhorabuena!!! Había sitio en la tabla para ti, y HAS SOBREVIVIDO :)')
+            st.title('¡¡¡Enhorabuena!!! Había sitio en la tabla de madera para ti, y HAS SOBREVIVIDO :)')
             st.image(img_ok)
 
 # Parte opcional 1: Ver un análisis de los datos originales del Titanic
 
-# Creamos un checkbox para mostrar los datos adicionales
-ver_datos = st.checkbox('Ver datos adicionales sobre el Titanic (para comprender mejor por que has sobrevivido, o no)')
-
-# Dibujar Gráfica si está activado el checkbox
+# Dibujar gráficas si está activado el checkbox
 if ver_datos:
-    st.write('Datos adicionales')
+    # Comenzamos mostrando un texto explicativo de la gráfica
+    st.write(f'La siguiente gráfica muestra la distribución de supervivencia en función de la edad de los pasajeros. Los datos que has introducido ({sexo} de {edad} años y alojado en {clase} clase), aparecen como una X roja en la gráfica, lo que te ayudará a entender mejor el resultado obtenido.')
+    # Empezaremos por la gráfica de distribución de supervivencia por edad
+    fig1, ax1 = plt.subplots()
+    ax1.scatter(df_titanic['Age'], df_titanic['Survived'], alpha=0.1)
+    plt.title("Supervivencia frente a edad")
+    plt.xlabel("Edad")
+    plt.ylabel("Supervivencia")
+    # Añadimos el dato actual como un punto rojo
+    plt.plot(X['Age'], Y, 'ro', marker='X')
+    # Dibujamos la gráfica
+    st.pyplot(fig1)
+
+    # Ahora mostraremos la distribución de supervivencia por Edad y Sexo
+    st.write('Además, las siguientes gráficas, muestran la distribución de supervivencia por edad, en función del sexo y la clase de los pasajeros')
+    fig2, ax2 = plt.subplots()
+    sb.swarmplot(data=df_titanic, x='Sex', y='Age', hue='Survived')
+    st.pyplot(fig2)
+
+    # Y finalmente, la distribución de supervivencia por Clase y Sexo
+    fig3, ax3 = plt.subplots()
+    sb.swarmplot(data=df_titanic, x='Pclass', y='Age', hue='Survived')
+    st.pyplot(fig3)
+
 
